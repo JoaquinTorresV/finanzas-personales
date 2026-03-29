@@ -88,7 +88,7 @@ class AppTheme {
       ),
       iconTheme: const IconThemeData(color: textPrimary),
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: surface,
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -171,7 +171,7 @@ class AppTheme {
           s.contains(WidgetState.selected) ? primary : surfaceHigh),
     ),
     dividerTheme: const DividerThemeData(color: border, thickness: 1, space: 1),
-    dialogTheme: DialogTheme(
+    dialogTheme: DialogThemeData(
       backgroundColor: surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
     ),
