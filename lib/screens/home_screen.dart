@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../providers/finance_provider.dart';
+import '../providers/theme_provider.dart';
 import '../theme/app_theme.dart';
 import '../utils/formatters.dart';
 import '../widgets/common_widgets.dart';
-import '../models/account.dart';
 import 'add_transaction_sheet.dart';
 import 'accounts_sheet.dart';
 
@@ -65,13 +65,18 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final pv = context.watch<FinanceProvider>();
+    final tp = context.watch<ThemeProvider>();
     final top = MediaQuery.of(context).padding.top;
+    final isDark = tp.isDark;
+    final surfAlt = isDark ? AppTheme.darkSurfaceAlt : AppTheme.lightSurfaceAlt;
+    final bord    = isDark ? AppTheme.darkBorder     : AppTheme.lightBorder;
+    final textPri = isDark ? AppTheme.darkTextPrimary   : AppTheme.lightTextPrimary;
+    final textSec = isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary;
+    final bgColor = isDark ? AppTheme.darkBg         : AppTheme.lightBg;
 
     return Container(
       padding: EdgeInsets.fromLTRB(20, top + 12, 20, 12),
-      decoration: const BoxDecoration(
-        color: AppTheme.bg,
-      ),
+      color: bgColor,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -79,58 +84,81 @@ class _Header extends StatelessWidget {
             children: [
               const Text('💸', style: TextStyle(fontSize: 26)),
               const SizedBox(width: 8),
-              Text(
-                'Finanzas',
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
+              Text('Finanzas', style: Theme.of(context).textTheme.headlineMedium),
               const Spacer(),
               // Month nav
               Container(
                 decoration: BoxDecoration(
-                  color: AppTheme.surfaceAlt,
+                  color: surfAlt,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppTheme.border),
+                  border: Border.all(color: bord),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _MonthBtn(
-                      icon: Icons.chevron_left,
-                      onTap: pv.previousMonth,
-                    ),
+                    _MonthBtn(icon: Icons.chevron_left, onTap: pv.previousMonth, color: textSec),
                     Text(
                       Fmt.monthCap(pv.selectedMonth),
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.textPrimary,
-                      ),
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: textPri),
                     ),
                     _MonthBtn(
                       icon: Icons.chevron_right,
                       onTap: pv.canGoNext ? pv.nextMonth : null,
+                      color: textSec,
                     ),
                   ],
                 ),
               ),
               const SizedBox(width: 8),
+              // Theme toggle
+              GestureDetector(
+                onTap: tp.toggle,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? AppTheme.primary.withOpacity(0.15)
+                        : AppTheme.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isDark
+                          ? AppTheme.primary.withOpacity(0.4)
+                          : AppTheme.lightBorder,
+                    ),
+                  ),
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    transitionBuilder: (child, anim) =>
+                        RotationTransition(turns: anim, child: FadeTransition(opacity: anim, child: child)),
+                    child: Icon(
+                      isDark ? Icons.wb_sunny_rounded : Icons.nightlight_round,
+                      key: ValueKey(isDark),
+                      size: 18,
+                      color: isDark ? const Color(0xFFFBBF24) : AppTheme.primary,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Accounts button
               GestureDetector(
                 onTap: () => showModalBottomSheet(
                   context: context,
                   isScrollControlled: true,
                   backgroundColor: Colors.transparent,
-                  builder: (_) => AccountsSheet(),
+                  builder: (_) => const AccountsSheet(),
                 ),
                 child: Container(
                   width: 38,
                   height: 38,
                   decoration: BoxDecoration(
-                    color: AppTheme.surfaceAlt,
+                    color: surfAlt,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppTheme.border),
+                    border: Border.all(color: bord),
                   ),
-                  child: const Icon(Icons.account_circle_outlined,
-                      size: 20, color: AppTheme.textSecondary),
+                  child: Icon(Icons.account_circle_outlined, size: 20, color: textSec),
                 ),
               ),
             ],
@@ -150,10 +178,10 @@ class _Header extends StatelessWidget {
                       duration: const Duration(milliseconds: 200),
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                       decoration: BoxDecoration(
-                        color: sel ? acc.color.withOpacity(0.2) : AppTheme.surfaceAlt,
+                        color: sel ? acc.color.withOpacity(0.2) : surfAlt,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                          color: sel ? acc.color.withOpacity(0.6) : AppTheme.border,
+                          color: sel ? acc.color.withOpacity(0.6) : bord,
                         ),
                       ),
                       child: Row(
@@ -166,7 +194,7 @@ class _Header extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
-                              color: sel ? acc.color : AppTheme.textSecondary,
+                              color: sel ? acc.color : textSec,
                             ),
                           ),
                         ],
@@ -186,7 +214,8 @@ class _Header extends StatelessWidget {
 class _MonthBtn extends StatelessWidget {
   final IconData icon;
   final VoidCallback? onTap;
-  const _MonthBtn({required this.icon, this.onTap});
+  final Color color;
+  const _MonthBtn({required this.icon, this.onTap, required this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -194,14 +223,13 @@ class _MonthBtn extends StatelessWidget {
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-        child: Icon(icon,
-            size: 18, color: onTap != null ? AppTheme.textSecondary : AppTheme.textMuted),
+        child: Icon(icon, size: 18, color: onTap != null ? color : color.withOpacity(0.3)),
       ),
     );
   }
 }
 
-// ─── Balance Card ────────────────────────────────────────────────────────────
+// ─── Balance Card ─────────────────────────────────────────────────────────────
 
 class _BalanceCard extends StatelessWidget {
   @override
@@ -221,11 +249,7 @@ class _BalanceCard extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
-          BoxShadow(
-            color: color.withOpacity(0.35),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
-          ),
+          BoxShadow(color: color.withOpacity(0.35), blurRadius: 24, offset: const Offset(0, 8)),
         ],
       ),
       child: Column(
@@ -237,11 +261,7 @@ class _BalanceCard extends StatelessWidget {
               const SizedBox(width: 6),
               Text(
                 acc?.name ?? 'Personal',
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500),
               ),
               const Spacer(),
               Container(
@@ -252,33 +272,20 @@ class _BalanceCard extends StatelessWidget {
                 ),
                 child: Text(
                   Fmt.monthShort(pv.selectedMonth).toUpperCase(),
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1,
-                  ),
+                  style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 20),
-          Text(
-            'Balance del mes',
-            style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 12),
-          ),
+          const Text('Balance del mes', style: TextStyle(color: Colors.white60, fontSize: 12)),
           const SizedBox(height: 6),
           FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
             child: Text(
               Fmt.money(pv.balance),
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 40,
-                fontWeight: FontWeight.w700,
-                letterSpacing: -2,
-              ),
+              style: const TextStyle(color: Colors.white, fontSize: 40, fontWeight: FontWeight.w700, letterSpacing: -2),
             ),
           ),
           const SizedBox(height: 16),
@@ -299,7 +306,7 @@ class _BalanceCard extends StatelessWidget {
   }
 }
 
-// ─── Stats Row ───────────────────────────────────────────────────────────────
+// ─── Stats Row ────────────────────────────────────────────────────────────────
 
 class _StatsRow extends StatelessWidget {
   @override
@@ -307,44 +314,33 @@ class _StatsRow extends StatelessWidget {
     final pv = context.watch<FinanceProvider>();
     return Row(
       children: [
-        StatChip(
-          label: 'Ingresos',
-          amount: pv.totalIncome,
-          color: AppTheme.income,
-          icon: Icons.south_east,
-        ),
+        StatChip(label: 'Ingresos', amount: pv.totalIncome, color: AppTheme.income, icon: Icons.south_east),
         const SizedBox(width: 10),
-        StatChip(
-          label: 'Gastos',
-          amount: pv.totalExpenses,
-          color: AppTheme.expense,
-          icon: Icons.north_west,
-        ),
+        StatChip(label: 'Gastos', amount: pv.totalExpenses, color: AppTheme.expense, icon: Icons.north_west),
         const SizedBox(width: 10),
-        StatChip(
-          label: 'Ahorrado',
-          amount: pv.totalSaved,
-          color: AppTheme.savings,
-          icon: Icons.savings_outlined,
-        ),
+        StatChip(label: 'Ahorrado', amount: pv.totalSaved, color: AppTheme.savings, icon: Icons.savings_outlined),
       ],
     );
   }
 }
 
-// ─── Chart Card ──────────────────────────────────────────────────────────────
+// ─── Chart Card ───────────────────────────────────────────────────────────────
 
 class _ChartCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final pv = context.watch<FinanceProvider>();
     final data = pv.last6MonthsData;
+    final isDark = context.watch<ThemeProvider>().isDark;
 
     final maxVal = data
         .expand((m) => [m['income'] as double, m['expense'] as double])
         .fold(0.0, (a, b) => a > b ? a : b);
 
     if (maxVal == 0) return const SizedBox();
+
+    final gridColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
+    final labelColor = isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted;
 
     return GlassCard(
       child: Column(
@@ -371,11 +367,7 @@ class _ChartCard extends StatelessWidget {
                   show: true,
                   drawVerticalLine: false,
                   horizontalInterval: maxVal / 2,
-                  getDrawingHorizontalLine: (v) => FlLine(
-                    color: AppTheme.border,
-                    strokeWidth: 1,
-                    dashArray: [4, 4],
-                  ),
+                  getDrawingHorizontalLine: (v) => FlLine(color: gridColor, strokeWidth: 1, dashArray: [4, 4]),
                 ),
                 borderData: FlBorderData(show: false),
                 titlesData: FlTitlesData(
@@ -387,11 +379,8 @@ class _ChartCard extends StatelessWidget {
                         if (i < 0 || i >= data.length) return const SizedBox();
                         return Padding(
                           padding: const EdgeInsets.only(top: 6),
-                          child: Text(
-                            Fmt.monthShort(data[i]['month'] as DateTime),
-                            style: const TextStyle(
-                                fontSize: 10, color: AppTheme.textMuted),
-                          ),
+                          child: Text(Fmt.monthShort(data[i]['month'] as DateTime),
+                              style: TextStyle(fontSize: 10, color: labelColor)),
                         );
                       },
                     ),
@@ -400,28 +389,14 @@ class _ChartCard extends StatelessWidget {
                   topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                   rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 ),
-                barGroups: List.generate(data.length, (i) {
-                  final inc = data[i]['income'] as double;
-                  final exp = data[i]['expense'] as double;
-                  return BarChartGroupData(
-                    x: i,
-                    barsSpace: 3,
-                    barRods: [
-                      BarChartRodData(
-                        toY: inc,
-                        color: AppTheme.income.withOpacity(0.85),
-                        width: 10,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      BarChartRodData(
-                        toY: exp,
-                        color: AppTheme.expense.withOpacity(0.85),
-                        width: 10,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ],
-                  );
-                }),
+                barGroups: List.generate(data.length, (i) => BarChartGroupData(
+                  x: i,
+                  barsSpace: 3,
+                  barRods: [
+                    BarChartRodData(toY: data[i]['income'] as double, color: AppTheme.income.withOpacity(0.85), width: 10, borderRadius: BorderRadius.circular(4)),
+                    BarChartRodData(toY: data[i]['expense'] as double, color: AppTheme.expense.withOpacity(0.85), width: 10, borderRadius: BorderRadius.circular(4)),
+                  ],
+                )),
               ),
             ),
           ),
@@ -439,18 +414,14 @@ class _Legend extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Row(
     children: [
-      Container(
-        width: 8,
-        height: 8,
-        decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(2)),
-      ),
+      Container(width: 8, height: 8, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(2))),
       const SizedBox(width: 4),
-      Text(label, style: const TextStyle(fontSize: 10, color: AppTheme.textMuted)),
+      Text(label, style: TextStyle(fontSize: 10, color: AppTheme.isDark(context) ? AppTheme.darkTextMuted : AppTheme.lightTextMuted)),
     ],
   );
 }
 
-// ─── Recent Transactions ─────────────────────────────────────────────────────
+// ─── Recent Transactions ──────────────────────────────────────────────────────
 
 class _RecentTransactions extends StatelessWidget {
   @override

@@ -26,15 +26,18 @@ class GlassCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = AppTheme.isDark(context);
     return GestureDetector(
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
           gradient: gradient,
-          color: gradient == null ? AppTheme.surface : null,
+          color: gradient == null
+              ? (isDark ? AppTheme.darkSurface : AppTheme.lightSurface)
+              : null,
           borderRadius: BorderRadius.circular(radius),
           border: Border.all(
-            color: borderColor ?? AppTheme.border,
+            color: borderColor ?? (isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
             width: 1,
           ),
         ),
@@ -52,12 +55,7 @@ class SectionHeader extends StatelessWidget {
   final String? action;
   final VoidCallback? onAction;
 
-  const SectionHeader({
-    super.key,
-    required this.title,
-    this.action,
-    this.onAction,
-  });
+  const SectionHeader({super.key, required this.title, this.action, this.onAction});
 
   @override
   Widget build(BuildContext context) {
@@ -68,14 +66,7 @@ class SectionHeader extends StatelessWidget {
         if (action != null)
           GestureDetector(
             onTap: onAction,
-            child: Text(
-              action!,
-              style: const TextStyle(
-                color: AppTheme.primaryLight,
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            child: Text(action!, style: const TextStyle(color: AppTheme.primaryLight, fontSize: 13, fontWeight: FontWeight.w500)),
           ),
       ],
     );
@@ -92,9 +83,12 @@ class TransactionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = AppTheme.isDark(context);
     final isIncome = tx.isIncome;
     final color = isIncome ? AppTheme.income : AppTheme.expense;
     final emoji = FinanceProvider.categoryEmoji[tx.category] ?? '💰';
+    final surfAlt = isDark ? AppTheme.darkSurfaceAlt : AppTheme.lightSurfaceAlt;
+    final bord    = isDark ? AppTheme.darkBorder     : AppTheme.lightBorder;
 
     return Dismissible(
       key: Key(tx.id),
@@ -113,56 +107,36 @@ class TransactionTile extends StatelessWidget {
         margin: const EdgeInsets.symmetric(vertical: 3),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: AppTheme.surfaceAlt,
+          color: surfAlt,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppTheme.border),
+          border: Border.all(color: bord),
         ),
         child: Row(
           children: [
             Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Center(
-                child: Text(emoji, style: const TextStyle(fontSize: 20)),
-              ),
+              width: 42, height: 42,
+              decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(12)),
+              child: Center(child: Text(emoji, style: const TextStyle(fontSize: 20))),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    tx.description,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(fontSize: 13),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  Text(tx.description, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 2),
                   Row(
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: color.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          tx.category,
-                          style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.w600),
-                        ),
+                        decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
+                        child: Text(tx.category, style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.w600)),
                       ),
                       const SizedBox(width: 6),
-                      Text(
-                        Fmt.dayMonth(tx.date),
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
+                      Text(Fmt.dayMonth(tx.date), style: Theme.of(context).textTheme.bodySmall),
                       if (tx.isRecurring) ...[
                         const SizedBox(width: 4),
-                        const Icon(Icons.repeat, size: 10, color: AppTheme.textMuted),
+                        Icon(Icons.repeat, size: 10, color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted),
                       ],
                     ],
                   ),
@@ -171,54 +145,10 @@ class TransactionTile extends StatelessWidget {
             ),
             Text(
               '${isIncome ? '+' : '-'}${Fmt.money(tx.amount)}',
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.w700,
-                fontSize: 14,
-              ),
+              style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 14),
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-// ─── AmountInput ─────────────────────────────────────────────────────────────
-
-class AmountDisplay extends StatelessWidget {
-  final String value;
-  final Color color;
-
-  const AmountDisplay({super.key, required this.value, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Column(
-        children: [
-          Text(
-            'Monto',
-            style: TextStyle(color: color.withOpacity(0.7), fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value.isEmpty ? '\$0' : '\$$value',
-            style: TextStyle(
-              color: color,
-              fontSize: 38,
-              fontWeight: FontWeight.w700,
-              letterSpacing: -1,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -232,38 +162,26 @@ class StatChip extends StatelessWidget {
   final Color color;
   final IconData icon;
 
-  const StatChip({
-    super.key,
-    required this.label,
-    required this.amount,
-    required this.color,
-    required this.icon,
-  });
+  const StatChip({super.key, required this.label, required this.amount, required this.color, required this.icon});
 
   @override
   Widget build(BuildContext context) {
+    final isDark = AppTheme.isDark(context);
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: AppTheme.surface,
+          color: isDark ? AppTheme.darkSurface : AppTheme.lightSurface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: color.withOpacity(0.25)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(5),
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(icon, color: color, size: 14),
-                ),
-              ],
+            Container(
+              padding: const EdgeInsets.all(5),
+              decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(8)),
+              child: Icon(icon, color: color, size: 14),
             ),
             const SizedBox(height: 10),
             Text(label, style: Theme.of(context).textTheme.bodySmall),
@@ -271,14 +189,7 @@ class StatChip extends StatelessWidget {
             FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
-              child: Text(
-                Fmt.money(amount),
-                style: TextStyle(
-                  color: color,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 15,
-                ),
-              ),
+              child: Text(Fmt.money(amount), style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 15)),
             ),
           ],
         ),
@@ -296,24 +207,18 @@ class EmptyState extends StatelessWidget {
   final String? actionLabel;
   final VoidCallback? onAction;
 
-  const EmptyState({
-    super.key,
-    required this.emoji,
-    required this.title,
-    required this.subtitle,
-    this.actionLabel,
-    this.onAction,
-  });
+  const EmptyState({super.key, required this.emoji, required this.title, required this.subtitle, this.actionLabel, this.onAction});
 
   @override
   Widget build(BuildContext context) {
+    final isDark = AppTheme.isDark(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
       decoration: BoxDecoration(
-        color: AppTheme.surface,
+        color: isDark ? AppTheme.darkSurface : AppTheme.lightSurface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.border),
+        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
       ),
       child: Column(
         children: [
@@ -321,11 +226,7 @@ class EmptyState extends StatelessWidget {
           const SizedBox(height: 14),
           Text(title, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 6),
-          Text(
-            subtitle,
-            style: Theme.of(context).textTheme.bodyMedium,
-            textAlign: TextAlign.center,
-          ),
+          Text(subtitle, style: Theme.of(context).textTheme.bodyMedium, textAlign: TextAlign.center),
           if (actionLabel != null) ...[
             const SizedBox(height: 18),
             TextButton(
@@ -353,13 +254,7 @@ class PrimaryButton extends StatelessWidget {
   final IconData? icon;
   final Color? color;
 
-  const PrimaryButton({
-    super.key,
-    required this.label,
-    this.onPressed,
-    this.icon,
-    this.color,
-  });
+  const PrimaryButton({super.key, required this.label, this.onPressed, this.icon, this.color});
 
   @override
   Widget build(BuildContext context) {

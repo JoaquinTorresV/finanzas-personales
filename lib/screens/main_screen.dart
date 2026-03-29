@@ -31,8 +31,8 @@ class _MainScreenState extends State<MainScreen> {
       ),
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
-          color: AppTheme.surface,
-          border: Border(top: BorderSide(color: AppTheme.border)),
+          color: Theme.of(context).colorScheme.surface,
+          border: Border(top: BorderSide(color: Theme.of(context).colorScheme.outline)),
         ),
         child: NavigationBar(
           selectedIndex: _index,

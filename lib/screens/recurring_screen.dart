@@ -24,7 +24,7 @@ class RecurringScreen extends StatelessWidget {
           SliverToBoxAdapter(
             child: Container(
               padding: EdgeInsets.fromLTRB(20, top + 16, 20, 16),
-              color: AppTheme.bg,
+              color: Theme.of(context).scaffoldBackgroundColor,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -207,10 +207,10 @@ class _RecurringTile extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: item.isActive ? AppTheme.surfaceAlt : AppTheme.surface,
+          color: item.isActive ? Theme.of(context).colorScheme.surfaceContainerHighest : Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: item.isActive ? color.withOpacity(0.2) : AppTheme.border,
+            color: item.isActive ? color.withOpacity(0.2) : Theme.of(context).colorScheme.outline,
           ),
         ),
         child: Row(
@@ -271,7 +271,7 @@ class _RecurringTile extends StatelessWidget {
                 Text(
                   '${item.isIncome ? '+' : '-'}${Fmt.money(item.amount)}',
                   style: TextStyle(
-                    color: item.isActive ? color : AppTheme.textMuted,
+                    color: item.isActive ? color : Theme.of(context).colorScheme.onSurface.withOpacity(0.35),
                     fontWeight: FontWeight.w700,
                     fontSize: 13,
                   ),
@@ -284,14 +284,14 @@ class _RecurringTile extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: item.isActive
                           ? AppTheme.income.withOpacity(0.1)
-                          : AppTheme.textMuted.withOpacity(0.1),
+                          : Theme.of(context).colorScheme.onSurface.withOpacity(0.35).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
                       item.isActive ? 'Activo' : 'Pausado',
                       style: TextStyle(
                         fontSize: 10,
-                        color: item.isActive ? AppTheme.income : AppTheme.textMuted,
+                        color: item.isActive ? AppTheme.income : Theme.of(context).colorScheme.onSurface.withOpacity(0.35),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -382,12 +382,12 @@ class _AddRecurringSheetState extends State<_AddRecurringSheet> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       decoration: BoxDecoration(
-                        color: _isExpense ? AppTheme.expense.withOpacity(0.15) : AppTheme.surfaceAlt,
+                        color: _isExpense ? AppTheme.expense.withOpacity(0.15) : Theme.of(context).colorScheme.surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: _isExpense ? AppTheme.expense.withOpacity(0.4) : AppTheme.border),
+                        border: Border.all(color: _isExpense ? AppTheme.expense.withOpacity(0.4) : Theme.of(context).colorScheme.outline),
                       ),
                       child: Center(
-                        child: Text('↑ Gasto', style: TextStyle(color: _isExpense ? AppTheme.expense : AppTheme.textMuted, fontWeight: FontWeight.w600)),
+                        child: Text('↑ Gasto', style: TextStyle(color: _isExpense ? AppTheme.expense : Theme.of(context).colorScheme.onSurface.withOpacity(0.35), fontWeight: FontWeight.w600)),
                       ),
                     ),
                   ),
@@ -402,12 +402,12 @@ class _AddRecurringSheetState extends State<_AddRecurringSheet> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       decoration: BoxDecoration(
-                        color: !_isExpense ? AppTheme.income.withOpacity(0.15) : AppTheme.surfaceAlt,
+                        color: !_isExpense ? AppTheme.income.withOpacity(0.15) : Theme.of(context).colorScheme.surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: !_isExpense ? AppTheme.income.withOpacity(0.4) : AppTheme.border),
+                        border: Border.all(color: !_isExpense ? AppTheme.income.withOpacity(0.4) : Theme.of(context).colorScheme.outline),
                       ),
                       child: Center(
-                        child: Text('↓ Ingreso', style: TextStyle(color: !_isExpense ? AppTheme.income : AppTheme.textMuted, fontWeight: FontWeight.w600)),
+                        child: Text('↓ Ingreso', style: TextStyle(color: !_isExpense ? AppTheme.income : Theme.of(context).colorScheme.onSurface.withOpacity(0.35), fontWeight: FontWeight.w600)),
                       ),
                     ),
                   ),
@@ -437,7 +437,7 @@ class _AddRecurringSheetState extends State<_AddRecurringSheet> {
             DropdownButtonFormField<String>(
               value: _category,
               decoration: const InputDecoration(labelText: 'Categoría', prefixIcon: Icon(Icons.category_outlined)),
-              dropdownColor: AppTheme.surfaceAlt,
+              dropdownColor: Theme.of(context).colorScheme.surfaceContainerHighest,
               items: cats.map((c) => DropdownMenuItem(value: c, child: Text('${FinanceProvider.categoryEmoji[c] ?? '💰'}  $c'))).toList(),
               onChanged: (v) => setState(() => _category = v),
             ),
@@ -452,7 +452,7 @@ class _AddRecurringSheetState extends State<_AddRecurringSheet> {
                     activeTrackColor: _color,
                     thumbColor: _color,
                     overlayColor: _color.withOpacity(0.2),
-                    inactiveTrackColor: AppTheme.border,
+                    inactiveTrackColor: Theme.of(context).colorScheme.outline,
                   ),
                   child: Slider(
                     value: _day.toDouble(),

@@ -111,9 +111,9 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
             // Toggle income / expense
             Container(
               decoration: BoxDecoration(
-                color: AppTheme.surfaceAlt,
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppTheme.border),
+                border: Border.all(color: Theme.of(context).colorScheme.outline),
               ),
               padding: const EdgeInsets.all(4),
               child: Row(
@@ -215,7 +215,7 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
                 labelText: 'Categoría',
                 prefixIcon: Icon(Icons.category_outlined),
               ),
-              dropdownColor: AppTheme.surfaceAlt,
+              dropdownColor: Theme.of(context).colorScheme.surfaceContainerHighest,
               items: categories.map((c) {
                 final emoji = FinanceProvider.categoryEmoji[c] ?? '💰';
                 return DropdownMenuItem(
@@ -233,21 +233,21 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 decoration: BoxDecoration(
-                  color: AppTheme.surfaceAlt,
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppTheme.border),
+                  border: Border.all(color: Theme.of(context).colorScheme.outline),
                 ),
                 child: Row(
                   children: [
                     const Icon(Icons.calendar_today_outlined,
-                        color: AppTheme.textSecondary, size: 18),
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6), size: 18),
                     const SizedBox(width: 12),
                     Text(
                       Fmt.fullDate(_date),
-                      style: const TextStyle(color: AppTheme.textPrimary),
+                      style: const TextStyle(color: Theme.of(context).colorScheme.onSurface),
                     ),
                     const Spacer(),
-                    const Icon(Icons.chevron_right, color: AppTheme.textMuted, size: 18),
+                    const Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.35), size: 18),
                   ],
                 ),
               ),
@@ -300,12 +300,12 @@ class _TypeButton extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 16, color: selected ? color : AppTheme.textMuted),
+              Icon(icon, size: 16, color: selected ? color : Theme.of(context).colorScheme.onSurface.withOpacity(0.35)),
               const SizedBox(width: 6),
               Text(
                 label,
                 style: TextStyle(
-                  color: selected ? color : AppTheme.textMuted,
+                  color: selected ? color : Theme.of(context).colorScheme.onSurface.withOpacity(0.35),
                   fontWeight: FontWeight.w600,
                   fontSize: 14,
                 ),

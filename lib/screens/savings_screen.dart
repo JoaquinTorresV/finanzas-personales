@@ -25,7 +25,7 @@ class SavingsScreen extends StatelessWidget {
           SliverToBoxAdapter(
             child: Container(
               padding: EdgeInsets.fromLTRB(20, top + 16, 20, 16),
-              color: AppTheme.bg,
+              color: Theme.of(context).scaffoldBackgroundColor,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -182,12 +182,12 @@ class _GoalCard extends StatelessWidget {
         child: const Icon(Icons.delete_outline, color: AppTheme.expense),
       ),
       child: GlassCard(
-        borderColor: goal.isCompleted ? color.withOpacity(0.5) : AppTheme.border,
+        borderColor: goal.isCompleted ? color.withOpacity(0.5) : Theme.of(context).colorScheme.outline,
         gradient: goal.isCompleted
             ? LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [color.withOpacity(0.15), AppTheme.surface],
+                colors: [color.withOpacity(0.15), Theme.of(context).colorScheme.surface],
               )
             : null,
         child: Column(
@@ -244,7 +244,7 @@ class _GoalCard extends StatelessWidget {
                     Text(
                       Fmt.percent(goal.progress),
                       style: const TextStyle(
-                        color: AppTheme.textSecondary,
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                         fontSize: 11,
                       ),
                     ),
@@ -411,9 +411,9 @@ class _AddGoalSheetState extends State<_AddGoalSheet> {
                       width: 44,
                       height: 44,
                       decoration: BoxDecoration(
-                        color: sel ? color.withOpacity(0.2) : AppTheme.surfaceAlt,
+                        color: sel ? color.withOpacity(0.2) : Theme.of(context).colorScheme.surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: sel ? color : AppTheme.border),
+                        border: Border.all(color: sel ? color : Theme.of(context).colorScheme.outline),
                       ),
                       child: Center(child: Text(ic, style: const TextStyle(fontSize: 20))),
                     ),

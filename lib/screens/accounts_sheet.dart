@@ -19,7 +19,7 @@ class AccountsSheet extends StatelessWidget {
       minChildSize: 0.4,
       builder: (_, ctrl) => Container(
         decoration: const BoxDecoration(
-          color: AppTheme.surface,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
         child: Column(
@@ -29,7 +29,7 @@ class AccountsSheet extends StatelessWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: AppTheme.border,
+                color: Theme.of(context).colorScheme.outline,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -77,10 +77,10 @@ class AccountsSheet extends StatelessWidget {
                         gradient: sel
                             ? AppTheme.gradientForColor(acc.color)
                             : null,
-                        color: sel ? null : AppTheme.surfaceAlt,
+                        color: sel ? null : Theme.of(context).colorScheme.surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: sel ? acc.color.withOpacity(0.5) : AppTheme.border,
+                          color: sel ? acc.color.withOpacity(0.5) : Theme.of(context).colorScheme.outline,
                         ),
                       ),
                       child: Row(
@@ -106,7 +106,7 @@ class AccountsSheet extends StatelessWidget {
                                 Text(
                                   acc.name,
                                   style: TextStyle(
-                                    color: sel ? Colors.white : AppTheme.textPrimary,
+                                    color: sel ? Colors.white : Theme.of(context).colorScheme.onSurface,
                                     fontWeight: FontWeight.w600,
                                     fontSize: 15,
                                   ),
@@ -115,7 +115,7 @@ class AccountsSheet extends StatelessWidget {
                                 Text(
                                   'Balance: ${Fmt.money(balance)}',
                                   style: TextStyle(
-                                    color: sel ? Colors.white70 : AppTheme.textSecondary,
+                                    color: sel ? Colors.white70 : Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                                     fontSize: 12,
                                   ),
                                 ),
@@ -128,7 +128,7 @@ class AccountsSheet extends StatelessWidget {
                             GestureDetector(
                               onTap: () => _confirmDelete(context, pv, acc),
                               child: const Icon(Icons.delete_outline,
-                                  color: AppTheme.textMuted, size: 20),
+                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.35), size: 20),
                             ),
                         ],
                       ),
@@ -218,7 +218,7 @@ class _AddAccountSheetState extends State<_AddAccountSheet> {
       child: Container(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
         decoration: const BoxDecoration(
-          color: AppTheme.surface,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
         child: Column(
@@ -231,7 +231,7 @@ class _AddAccountSheetState extends State<_AddAccountSheet> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppTheme.border,
+                  color: Theme.of(context).colorScheme.outline,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -253,10 +253,10 @@ class _AddAccountSheetState extends State<_AddAccountSheet> {
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: sel ? Color(_colorValue).withOpacity(0.2) : AppTheme.surfaceAlt,
+                      color: sel ? Color(_colorValue).withOpacity(0.2) : Theme.of(context).colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                          color: sel ? Color(_colorValue) : AppTheme.border),
+                          color: sel ? Color(_colorValue) : Theme.of(context).colorScheme.outline),
                     ),
                     child: Center(child: Text(ic, style: const TextStyle(fontSize: 20))),
                   ),

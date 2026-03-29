@@ -40,7 +40,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
           // Header
           Container(
             padding: EdgeInsets.fromLTRB(20, top + 16, 20, 0),
-            color: AppTheme.bg,
+            color: Theme.of(context).scaffoldBackgroundColor,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -128,7 +128,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                                 Text(
                                   date,
                                   style: const TextStyle(
-                                    color: AppTheme.textSecondary,
+                                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
                                     letterSpacing: 0.5,
@@ -221,16 +221,16 @@ class _FilterChip extends StatelessWidget {
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: selected ? c.withOpacity(0.15) : AppTheme.surfaceAlt,
+          color: selected ? c.withOpacity(0.15) : Theme.of(context).colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: selected ? c.withOpacity(0.5) : AppTheme.border,
+            color: selected ? c.withOpacity(0.5) : Theme.of(context).colorScheme.outline,
           ),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: selected ? c : AppTheme.textSecondary,
+            color: selected ? c : Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
             fontSize: 12,
             fontWeight: FontWeight.w600,
           ),
