@@ -243,7 +243,7 @@ class _GoalCard extends StatelessWidget {
                     ),
                     Text(
                       Fmt.percent(goal.progress),
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                         fontSize: 11,
                       ),
@@ -305,31 +305,61 @@ class _GoalCard extends StatelessWidget {
 
   void _showAddFunds(BuildContext context, SavingsGoal goal) {
     final ctrl = TextEditingController();
+    bool discountFromBalance = true;
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('Abonar a ${goal.name}'),
-        content: TextField(
-          controller: ctrl,
-          keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          autofocus: true,
-          decoration: const InputDecoration(labelText: 'Monto (CLP)', prefixText: '\$ '),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
-          ElevatedButton(
-            onPressed: () {
-              final amount = double.tryParse(ctrl.text);
-              if (amount != null && amount > 0) {
-                context.read<FinanceProvider>().addToSavings(goal.id, amount);
-                Navigator.pop(ctx);
-              }
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Color(goal.colorValue)),
-            child: const Text('Abonar', style: TextStyle(color: Colors.white)),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setStateDialog) => AlertDialog(
+          title: Text('Abonar a ${goal.name}'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: ctrl,
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                autofocus: true,
+                decoration: const InputDecoration(labelText: 'Monto (CLP)', prefixText: '\$ '),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Theme.of(context).colorScheme.outline),
+                ),
+                child: CheckboxListTile(
+                  value: discountFromBalance,
+                  onChanged: (v) => setStateDialog(() => discountFromBalance = v ?? true),
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  controlAffinity: ListTileControlAffinity.leading,
+                  title: const Text('Descontar del balance del mes'),
+                  subtitle: const Text('Se registrará como gasto en la cuenta.'),
+                ),
+              ),
+            ],
           ),
-        ],
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
+            ElevatedButton(
+              onPressed: () {
+                final amount = double.tryParse(ctrl.text);
+                if (amount != null && amount > 0) {
+                  context.read<FinanceProvider>().addToSavings(
+                        goal.id,
+                        amount,
+                        discountFromBalance: discountFromBalance,
+                      );
+                  Navigator.pop(ctx);
+                }
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Color(goal.colorValue)),
+              child: const Text('Abonar', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -350,6 +380,7 @@ class _AddGoalSheetState extends State<_AddGoalSheet> {
   final _initialCtrl = TextEditingController();
   String _selectedIcon = '🎯';
   int _selectedColor = 0xFF3B82F6;
+  bool _discountInitialFromBalance = true;
 
   @override
   void dispose() {
@@ -374,7 +405,7 @@ class _AddGoalSheetState extends State<_AddGoalSheet> {
       currentAmount: initial,
       colorValue: _selectedColor,
       icon: _selectedIcon,
-    ));
+    ), discountInitialFromBalance: _discountInitialFromBalance);
     Navigator.pop(context);
   }
 
@@ -481,6 +512,24 @@ class _AddGoalSheetState extends State<_AddGoalSheet> {
                 labelText: 'Ya tengo ahorrado (opcional)',
                 prefixText: '\$ ',
                 prefixIcon: Icon(Icons.savings_outlined),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Theme.of(context).colorScheme.outline),
+              ),
+              child: CheckboxListTile(
+                value: _discountInitialFromBalance,
+                onChanged: (v) => setState(() => _discountInitialFromBalance = v ?? true),
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                controlAffinity: ListTileControlAffinity.leading,
+                title: const Text('¿Ese ahorro sale del balance mensual?'),
+                subtitle: const Text('Si activas esto, se descontará como gasto de la cuenta.'),
               ),
             ),
             const SizedBox(height: 20),

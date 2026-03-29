@@ -137,7 +137,7 @@ class RecurringScreen extends StatelessWidget {
       content: Text(count > 0
           ? '✅ $count transacciones registradas'
           : 'ℹ️ Ya estaban registradas este mes'),
-      backgroundColor: count > 0 ? AppTheme.income : AppTheme.surfaceHigh,
+      backgroundColor: count > 0 ? AppTheme.income : AppTheme.surfaceHighColor(context),
     ));
   }
 

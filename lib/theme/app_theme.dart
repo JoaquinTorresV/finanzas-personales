@@ -4,36 +4,36 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // ─── Accent colors (same in both themes) ─────────────────────────────────
-  static const Color primary       = Color(0xFF7C3AED);
-  static const Color primaryLight  = Color(0xFF8B5CF6);
-  static const Color secondary     = Color(0xFF0891B2);
+  static const Color primary       = Color(0xFF0F766E);
+  static const Color primaryLight  = Color(0xFF14B8A6);
+  static const Color secondary     = Color(0xFF334155);
 
-  static const Color income        = Color(0xFF059669);
-  static const Color incomeLight   = Color(0xFF10B981);
-  static const Color expense       = Color(0xFFDC2626);
-  static const Color expenseLight  = Color(0xFFEF4444);
-  static const Color savings       = Color(0xFF2563EB);
-  static const Color savingsLight  = Color(0xFF3B82F6);
+  static const Color income        = Color(0xFF16A34A);
+  static const Color incomeLight   = Color(0xFF22C55E);
+  static const Color expense       = Color(0xFFD32F2F);
+  static const Color expenseLight  = Color(0xFFEF5350);
+  static const Color savings       = Color(0xFF0369A1);
+  static const Color savingsLight  = Color(0xFF0284C7);
 
   // ─── Dark palette ────────────────────────────────────────────────────────
-  static const Color darkBg            = Color(0xFF0A0A14);
-  static const Color darkSurface       = Color(0xFF141424);
-  static const Color darkSurfaceAlt    = Color(0xFF1E1E32);
-  static const Color darkSurfaceHigh   = Color(0xFF262640);
-  static const Color darkBorder        = Color(0xFF2A2A44);
-  static const Color darkTextPrimary   = Color(0xFFF1F0FF);
-  static const Color darkTextSecondary = Color(0xFF9090B8);
-  static const Color darkTextMuted     = Color(0xFF5A5A7A);
+  static const Color darkBg            = Color(0xFF0B0F14);
+  static const Color darkSurface       = Color(0xFF11161D);
+  static const Color darkSurfaceAlt    = Color(0xFF171E27);
+  static const Color darkSurfaceHigh   = Color(0xFF212A35);
+  static const Color darkBorder        = Color(0xFF2C3744);
+  static const Color darkTextPrimary   = Color(0xFFE5E7EB);
+  static const Color darkTextSecondary = Color(0xFF9CA3AF);
+  static const Color darkTextMuted     = Color(0xFF6B7280);
 
   // ─── Light palette ───────────────────────────────────────────────────────
-  static const Color lightBg            = Color(0xFFF5F4FF);
+  static const Color lightBg            = Color(0xFFF6F7F9);
   static const Color lightSurface       = Color(0xFFFFFFFF);
-  static const Color lightSurfaceAlt    = Color(0xFFF0EFFE);
-  static const Color lightSurfaceHigh   = Color(0xFFE8E5FD);
-  static const Color lightBorder        = Color(0xFFDDD9FA);
-  static const Color lightTextPrimary   = Color(0xFF1A1433);
-  static const Color lightTextSecondary = Color(0xFF6B63A3);
-  static const Color lightTextMuted     = Color(0xFF9E98C8);
+  static const Color lightSurfaceAlt    = Color(0xFFF1F5F9);
+  static const Color lightSurfaceHigh   = Color(0xFFE2E8F0);
+  static const Color lightBorder        = Color(0xFFD1D5DB);
+  static const Color lightTextPrimary   = Color(0xFF111827);
+  static const Color lightTextSecondary = Color(0xFF4B5563);
+  static const Color lightTextMuted     = Color(0xFF6B7280);
 
   // ─── Context-aware helpers ───────────────────────────────────────────────
   static bool isDark(BuildContext ctx) => Theme.of(ctx).brightness == Brightness.dark;
@@ -143,10 +143,10 @@ class AppTheme {
   }
 
   // ─── Gradients ───────────────────────────────────────────────────────────
-  static const LinearGradient purpleGradient  = LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF7C3AED), Color(0xFF5B21B6)]);
-  static const LinearGradient incomeGradient  = LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF059669), Color(0xFF047857)]);
-  static const LinearGradient expenseGradient = LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFFDC2626), Color(0xFFB91C1C)]);
-  static const LinearGradient savingsGradient = LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)]);
+  static const LinearGradient purpleGradient  = LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF0F766E), Color(0xFF115E59)]);
+  static const LinearGradient incomeGradient  = LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF16A34A), Color(0xFF15803D)]);
+  static const LinearGradient expenseGradient = LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFFD32F2F), Color(0xFFB71C1C)]);
+  static const LinearGradient savingsGradient = LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF0369A1), Color(0xFF075985)]);
 
   static LinearGradient gradientForColor(Color c) => LinearGradient(
     begin: Alignment.topLeft, end: Alignment.bottomRight,

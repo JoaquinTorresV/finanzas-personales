@@ -239,15 +239,15 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.calendar_today_outlined,
+                    Icon(Icons.calendar_today_outlined,
                         color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6), size: 18),
                     const SizedBox(width: 12),
                     Text(
                       Fmt.fullDate(_date),
-                      style: const TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                     ),
                     const Spacer(),
-                    const Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.35), size: 18),
+                    Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.35), size: 18),
                   ],
                 ),
               ),

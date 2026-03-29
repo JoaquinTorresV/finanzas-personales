@@ -7,6 +7,18 @@ import '../models/transaction.dart';
 import '../models/recurring_item.dart';
 import '../models/savings_goal.dart';
 
+class FinanceNotificationEvent {
+  final String key;
+  final String title;
+  final String body;
+
+  const FinanceNotificationEvent({
+    required this.key,
+    required this.title,
+    required this.body,
+  });
+}
+
 class FinanceProvider extends ChangeNotifier {
   static const _uuid = Uuid();
 
@@ -18,6 +30,14 @@ class FinanceProvider extends ChangeNotifier {
   DateTime _selectedMonth = DateTime.now();
   bool _isLoading = true;
 
+  bool _notificationsEnabled = true;
+  bool _goalCompletedNotificationsEnabled = true;
+  bool _lowBalanceRecurringNotificationsEnabled = true;
+  int _lowBalanceRecurringDaysBefore = 2;
+
+  final Set<String> _sentGoalNotificationKeys = {};
+  final Set<String> _sentRecurringNotificationKeys = {};
+
   // ─── Getters ────────────────────────────────────────────────────────────────
 
   List<Account> get accounts => _accounts;
@@ -26,6 +46,11 @@ class FinanceProvider extends ChangeNotifier {
   List<SavingsGoal> get allSavingsGoals => _savingsGoals;
   bool get isLoading => _isLoading;
   DateTime get selectedMonth => _selectedMonth;
+  bool get notificationsEnabled => _notificationsEnabled;
+  bool get goalCompletedNotificationsEnabled => _goalCompletedNotificationsEnabled;
+  bool get lowBalanceRecurringNotificationsEnabled =>
+      _lowBalanceRecurringNotificationsEnabled;
+  int get lowBalanceRecurringDaysBefore => _lowBalanceRecurringDaysBefore;
 
   Account? get selectedAccount {
     if (_accounts.isEmpty) return null;
@@ -206,17 +231,50 @@ class FinanceProvider extends ChangeNotifier {
 
   // ─── Savings operations ──────────────────────────────────────────────────────
 
-  Future<void> addSavingsGoal(SavingsGoal goal) async {
+  Future<void> addSavingsGoal(
+    SavingsGoal goal, {
+    bool discountInitialFromBalance = false,
+  }) async {
     _savingsGoals.add(goal);
+
+    if (discountInitialFromBalance && goal.currentAmount > 0) {
+      _transactions.add(Transaction(
+        id: _uuid.v4(),
+        accountId: goal.accountId,
+        amount: goal.currentAmount,
+        type: 'expense',
+        category: 'Ahorro',
+        description: 'Aporte inicial a ahorro: ${goal.name}',
+        date: _dateInSelectedMonth(),
+      ));
+    }
+
     await _persist();
     notifyListeners();
   }
 
-  Future<void> addToSavings(String id, double amount) async {
+  Future<void> addToSavings(
+    String id,
+    double amount, {
+    bool discountFromBalance = false,
+  }) async {
     final i = _savingsGoals.indexWhere((s) => s.id == id);
     if (i >= 0) {
-      _savingsGoals[i] =
-          _savingsGoals[i].copyWith(currentAmount: _savingsGoals[i].currentAmount + amount);
+      final goal = _savingsGoals[i];
+      _savingsGoals[i] = goal.copyWith(currentAmount: goal.currentAmount + amount);
+
+      if (discountFromBalance) {
+        _transactions.add(Transaction(
+          id: _uuid.v4(),
+          accountId: goal.accountId,
+          amount: amount,
+          type: 'expense',
+          category: 'Ahorro',
+          description: 'Aporte a ahorro: ${goal.name}',
+          date: _dateInSelectedMonth(),
+        ));
+      }
+
       await _persist();
       notifyListeners();
     }
@@ -250,6 +308,126 @@ class FinanceProvider extends ChangeNotifier {
         (_selectedMonth.year == now.year && _selectedMonth.month < now.month);
   }
 
+  DateTime _dateInSelectedMonth() {
+    final now = DateTime.now();
+    final lastDay = DateTime(_selectedMonth.year, _selectedMonth.month + 1, 0).day;
+    final day = now.day > lastDay ? lastDay : now.day;
+    return DateTime(_selectedMonth.year, _selectedMonth.month, day);
+  }
+
+  // ─── Notification settings & rules ──────────────────────────────────────────
+
+  Future<void> setNotificationsEnabled(bool value) async {
+    _notificationsEnabled = value;
+    await _persist();
+    notifyListeners();
+  }
+
+  Future<void> setGoalCompletedNotificationsEnabled(bool value) async {
+    _goalCompletedNotificationsEnabled = value;
+    await _persist();
+    notifyListeners();
+  }
+
+  Future<void> setLowBalanceRecurringNotificationsEnabled(bool value) async {
+    _lowBalanceRecurringNotificationsEnabled = value;
+    await _persist();
+    notifyListeners();
+  }
+
+  Future<void> setLowBalanceRecurringDaysBefore(int days) async {
+    _lowBalanceRecurringDaysBefore = days.clamp(1, 7);
+    await _persist();
+    notifyListeners();
+  }
+
+  Future<List<FinanceNotificationEvent>> collectNotificationEvents() async {
+    if (!_notificationsEnabled) return const [];
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final events = <FinanceNotificationEvent>[];
+    var hasNewKeys = false;
+
+    if (_goalCompletedNotificationsEnabled) {
+      for (final goal in _savingsGoals) {
+        if (!goal.isCompleted) continue;
+        final key = 'goal_completed_${goal.id}';
+        if (_sentGoalNotificationKeys.contains(key)) continue;
+
+        final accountName = _accountName(goal.accountId);
+        events.add(FinanceNotificationEvent(
+          key: key,
+          title: 'Meta completada',
+          body: '${goal.icon} ${goal.name} completada en $accountName.',
+        ));
+        _sentGoalNotificationKeys.add(key);
+        hasNewKeys = true;
+      }
+    }
+
+    if (_lowBalanceRecurringNotificationsEnabled) {
+      for (final account in _accounts) {
+        final monthBalance = _accountBalanceForMonth(
+          accountId: account.id,
+          year: today.year,
+          month: today.month,
+        );
+
+        final recurringItems = _recurringItems.where(
+          (item) => item.accountId == account.id && item.isExpense && item.isActive,
+        );
+
+        for (final item in recurringItems) {
+          var dueDate = DateTime(today.year, today.month, item.dayOfMonth.clamp(1, 28));
+          if (dueDate.isBefore(today)) {
+            dueDate = DateTime(today.year, today.month + 1, item.dayOfMonth.clamp(1, 28));
+          }
+
+          final daysUntil = dueDate.difference(today).inDays;
+          final isInWindow = daysUntil >= 0 && daysUntil <= _lowBalanceRecurringDaysBefore;
+          final hasLowBalance = monthBalance < item.amount;
+          if (!isInWindow || !hasLowBalance) continue;
+
+          final key = 'rec_low_${item.id}_${dueDate.year}_${dueDate.month}';
+          if (_sentRecurringNotificationKeys.contains(key)) continue;
+
+          events.add(FinanceNotificationEvent(
+            key: key,
+            title: 'Saldo insuficiente',
+            body: 'En ${account.name} faltan fondos para ${item.description} (vence en $daysUntil d).',
+          ));
+          _sentRecurringNotificationKeys.add(key);
+          hasNewKeys = true;
+        }
+      }
+    }
+
+    if (hasNewKeys) {
+      await _persist();
+    }
+
+    return events;
+  }
+
+  double _accountBalanceForMonth({
+    required String accountId,
+    required int year,
+    required int month,
+  }) {
+    final txs = _transactions.where((t) =>
+        t.accountId == accountId && t.date.year == year && t.date.month == month);
+
+    return txs.fold(0.0, (sum, tx) => sum + (tx.isIncome ? tx.amount : -tx.amount));
+  }
+
+  String _accountName(String accountId) {
+    for (final account in _accounts) {
+      if (account.id == accountId) return account.name;
+    }
+    return 'tu cuenta';
+  }
+
   // ─── Helpers ─────────────────────────────────────────────────────────────────
 
   String newId() => _uuid.v4();
@@ -276,6 +454,21 @@ class FinanceProvider extends ChangeNotifier {
       decode('savings', _savingsGoals, SavingsGoal.fromJson);
 
       _selectedAccountId = p.getString('selectedAccountId');
+
+      _notificationsEnabled = p.getBool('notificationsEnabled') ?? true;
+      _goalCompletedNotificationsEnabled =
+          p.getBool('goalCompletedNotificationsEnabled') ?? true;
+      _lowBalanceRecurringNotificationsEnabled =
+          p.getBool('lowBalanceRecurringNotificationsEnabled') ?? true;
+      _lowBalanceRecurringDaysBefore =
+          (p.getInt('lowBalanceRecurringDaysBefore') ?? 2).clamp(1, 7);
+
+      _sentGoalNotificationKeys
+        ..clear()
+        ..addAll(p.getStringList('sentGoalNotificationKeys') ?? const []);
+      _sentRecurringNotificationKeys
+        ..clear()
+        ..addAll(p.getStringList('sentRecurringNotificationKeys') ?? const []);
 
       if (_accounts.isEmpty) {
         final personal = Account(
@@ -338,6 +531,16 @@ class FinanceProvider extends ChangeNotifier {
       if (_selectedAccountId != null) {
         await p.setString('selectedAccountId', _selectedAccountId!);
       }
+      await p.setBool('notificationsEnabled', _notificationsEnabled);
+      await p.setBool(
+          'goalCompletedNotificationsEnabled', _goalCompletedNotificationsEnabled);
+      await p.setBool('lowBalanceRecurringNotificationsEnabled',
+          _lowBalanceRecurringNotificationsEnabled);
+      await p.setInt('lowBalanceRecurringDaysBefore', _lowBalanceRecurringDaysBefore);
+      await p.setStringList(
+          'sentGoalNotificationKeys', _sentGoalNotificationKeys.toList());
+      await p.setStringList(
+          'sentRecurringNotificationKeys', _sentRecurringNotificationKeys.toList());
     } catch (e) {
       debugPrint('FinanceProvider._persist error: $e');
     }
@@ -354,6 +557,7 @@ class FinanceProvider extends ChangeNotifier {
     'Educación',
     'Arriendo',
     'Servicios',
+    'Ahorro',
     'Ropa',
     'Tecnología',
     'Otros',
@@ -378,6 +582,7 @@ class FinanceProvider extends ChangeNotifier {
     'Educación': '📚',
     'Arriendo': '🏠',
     'Servicios': '⚡',
+    'Ahorro': '🏦',
     'Ropa': '👕',
     'Tecnología': '💻',
     'Freelance': '💻',

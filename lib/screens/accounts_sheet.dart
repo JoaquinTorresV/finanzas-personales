@@ -18,7 +18,7 @@ class AccountsSheet extends StatelessWidget {
       maxChildSize: 0.9,
       minChildSize: 0.4,
       builder: (_, ctrl) => Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
@@ -46,6 +46,32 @@ class AccountsSheet extends StatelessWidget {
                     style: TextButton.styleFrom(foregroundColor: AppTheme.primaryLight),
                   ),
                 ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Theme.of(context).colorScheme.outline),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.delete_outline, color: AppTheme.expense, size: 18),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        pv.accounts.length > 1
+                            ? 'Sección eliminar cuenta: usa el icono de papelera para borrar una cuenta.'
+                            : 'Necesitas al menos 2 cuentas para poder eliminar una.',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
             Expanded(
@@ -122,13 +148,37 @@ class AccountsSheet extends StatelessWidget {
                               ],
                             ),
                           ),
-                          if (sel)
+                          if (pv.accounts.length > 1)
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (sel)
+                                  Icon(
+                                    Icons.check_circle,
+                                    color: sel ? Colors.white : Theme.of(context).colorScheme.onSurface,
+                                    size: 20,
+                                  ),
+                                if (sel) const SizedBox(width: 10),
+                                GestureDetector(
+                                  onTap: () => _confirmDelete(context, pv, acc),
+                                  child: Icon(Icons.delete_outline,
+                                      color: sel
+                                          ? Colors.white.withOpacity(0.9)
+                                          : Theme.of(context).colorScheme.onSurface.withOpacity(0.35),
+                                      size: 20),
+                                ),
+                              ],
+                            )
+                          else if (sel)
                             const Icon(Icons.check_circle, color: Colors.white, size: 20)
-                          else if (pv.accounts.length > 1)
+                          else
                             GestureDetector(
-                              onTap: () => _confirmDelete(context, pv, acc),
-                              child: const Icon(Icons.delete_outline,
-                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.35), size: 20),
+                              onTap: null,
+                              child: Icon(
+                                Icons.delete_outline,
+                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
+                                size: 20,
+                              ),
                             ),
                         ],
                       ),
@@ -144,12 +194,16 @@ class AccountsSheet extends StatelessWidget {
   }
 
   void _confirmDelete(BuildContext context, FinanceProvider pv, Account acc) {
+    final isSelected = pv.selectedAccount?.id == acc.id;
+    final nextAccount = pv.accounts.firstWhere((a) => a.id != acc.id);
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text('Eliminar ${acc.name}'),
-        content: const Text(
-            'Se eliminarán todos los movimientos, recurrentes y metas de esta cuenta. ¿Continuar?'),
+        content: Text(isSelected
+            ? 'Esta es tu cuenta actual. Al eliminarla, se seleccionará ${nextAccount.name}. También se eliminarán todos sus movimientos, recurrentes y metas. ¿Continuar?'
+            : 'Se eliminarán todos los movimientos, recurrentes y metas de esta cuenta. ¿Continuar?'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
           ElevatedButton(
@@ -217,7 +271,7 @@ class _AddAccountSheetState extends State<_AddAccountSheet> {
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: Container(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),

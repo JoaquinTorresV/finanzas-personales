@@ -127,7 +127,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                               children: [
                                 Text(
                                   date,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,

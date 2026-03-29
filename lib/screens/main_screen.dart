@@ -3,7 +3,7 @@ import 'home_screen.dart';
 import 'transactions_screen.dart';
 import 'recurring_screen.dart';
 import 'savings_screen.dart';
-import '../theme/app_theme.dart';
+import 'notifications_settings_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -20,6 +20,7 @@ class _MainScreenState extends State<MainScreen> {
     TransactionsScreen(),
     RecurringScreen(),
     SavingsScreen(),
+    NotificationsSettingsScreen(),
   ];
 
   @override
@@ -30,7 +31,7 @@ class _MainScreenState extends State<MainScreen> {
         children: _screens,
       ),
       bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
           border: Border(top: BorderSide(color: Theme.of(context).colorScheme.outline)),
         ),
@@ -57,6 +58,11 @@ class _MainScreenState extends State<MainScreen> {
               icon: Icon(Icons.savings_outlined),
               selectedIcon: Icon(Icons.savings_rounded),
               label: 'Ahorros',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.notifications_outlined),
+              selectedIcon: Icon(Icons.notifications_rounded),
+              label: 'Alertas',
             ),
           ],
         ),
