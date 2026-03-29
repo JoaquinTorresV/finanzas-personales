@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../providers/finance_provider.dart';
+import '../providers/theme_provider.dart';
 import '../models/savings_goal.dart';
 import '../theme/app_theme.dart';
 import '../utils/formatters.dart';
@@ -264,11 +265,14 @@ class _GoalCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
+            // Projection chip
+            if (!goal.isCompleted) _ProjectionChip(goal: goal),
+            if (!goal.isCompleted) const SizedBox(height: 10),
             Row(
               children: [
                 if (!goal.isCompleted)
                   Text(
-                    'Faltan ${Fmt.money(goal.remaining)}',
+                    'Faltan \${Fmt.money(goal.remaining)}',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 const Spacer(),
@@ -332,6 +336,65 @@ class _GoalCard extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+
+// ─── Projection chip ──────────────────────────────────────────────────────────
+
+class _ProjectionChip extends StatelessWidget {
+  final SavingsGoal goal;
+  const _ProjectionChip({required this.goal});
+
+  @override
+  Widget build(BuildContext context) {
+    final pv = context.read<FinanceProvider>();
+    final avgSavings = pv.avgMonthlySavings;
+    final color = Color(goal.colorValue);
+    String projectionText;
+
+    if (avgSavings <= 0) {
+      projectionText = 'Empieza a ahorrar para ver proyección';
+    } else {
+      final remaining = goal.remaining;
+      final monthsNeeded = (remaining / avgSavings).ceil();
+      if (monthsNeeded <= 0) {
+        projectionText = '🎉 ¡Ya tienes suficiente!';
+      } else if (monthsNeeded == 1) {
+        projectionText = '🚀 La alcanzas el próximo mes';
+      } else {
+        final targetDate = DateTime(DateTime.now().year, DateTime.now().month + monthsNeeded);
+        final months = monthsNeeded;
+        projectionText = '📅 La alcanzas en $months ${months == 1 ? 'mes' : 'meses'} (~${_monthYear(targetDate)})';
+      }
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withOpacity(0.2)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.auto_graph, size: 14, color: color),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              projectionText,
+              style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w500),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _monthYear(DateTime d) {
+    const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    return '${months[d.month - 1]} ${d.year}';
   }
 }
 
